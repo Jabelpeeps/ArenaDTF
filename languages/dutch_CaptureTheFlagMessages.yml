@@ -1,0 +1,21 @@
+version: 1.2
+
+CaptureTheFlag:
+    flaghome: "&2home"
+    flagfloor: "&5Op de grond"
+    flagperson: "&4"  ## will display the name of the person after what is provided here
+    teamscore: "&6{team}&e:&2 {captures}&6/{maxcaptures} {flagholder}"
+    teamscore_separator: ", "
+    score: "{prefix} &eScore : {teamscores}"
+    returned_flag: "{prefix} &2Je vlag is terug in je Basis"
+    player_returned_flag: "{prefix} &6{player}&2 Heeft de vlag terug veroverd"
+    taken_your_flag: "{prefix} &6{player}&c Heeft je vlag!"
+    taken_enemy_flag: "{prefix} &6{player}&a Heeft de tegenstanders zijn vlag!"
+    teamscored: |
+        {prefix} &8 <===&6{team} &eHeeft de Vlag gevangen &8===>
+        {score}
+    time_expired_win: "{prefix} {teams} Heeft Gewonnen! gefeliciteerd!"
+    time_expired_draw: "{prefix} De wedstrijd is gestopt met een gelijke stand tussen {teams}"
+    time_remaining: |
+        &4<---- &f{timeleft} remaining &4---->
+        {score}

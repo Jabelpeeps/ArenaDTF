@@ -1,0 +1,84 @@
+configVersion: 2.0
+
+DefendTheFlag:
+  name: DefendTheFlag
+  command: dtf
+  prefix: '&8[DTF]&e'
+  gameSize:
+    nTeams: '2'
+    teamSize: '1'
+  nLives: infinite
+  victoryCondition: HIGHESTKILLS
+  times:
+    matchTime: 120
+  tracking:
+    database: dtf
+    useTrackerMessages: false
+  arenaType: DefendTheFlag
+  arenaClass: DTFArena
+  defaults:
+    options:
+    - woolTeams
+    - alwaysTeamNames
+  onEnter:
+    options:
+    - storeExperience
+    - storeGamemode
+    - storeItems
+    - storeHealth
+    - storeHunger
+    - storeMagic
+    - storeHeroClass
+    - clearInventory
+    - clearExperience
+    - deEnchant
+    - gameMode=SURVIVAL
+    - flightOff
+  onLeave:
+    options:
+    - restoreExperience
+    - restoreGamemode
+    - restoreItems
+    - restoreHealth
+    - restoreHunger
+    - restoreMagic
+    - restoreHeroClass
+    - clearInventory
+    - deEnchant
+  onJoin:
+    options:
+    - teleportWaitRoom
+    - hunger=20
+    - pvpOff
+  onOpen:
+    options:
+    - pvpOff
+  onPrestart:
+    giveClass:
+      default: gladiator
+    options:
+    - pvpOff
+    - deEnchant
+  onStart:
+    options:
+    - teleportIn
+    - hunger=20
+    - pvpOn
+  onComplete:
+    options:
+    - teleportOut
+  onSpawn:
+    giveItems:
+    - COMPASS 1
+    options:
+    - health=20.0
+    - hunger=20
+    - respawnWithClass
+  onDeath:
+    options:
+    - clearInventory
+    - respawn
+  winner:
+    options:
+    - health=20.0
+    - hunger=20

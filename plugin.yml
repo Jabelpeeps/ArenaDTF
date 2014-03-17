@@ -1,0 +1,10 @@
+name: ${project.name}
+version:  ${project.version}
+author: Alkarin
+
+description: Defend the flag event using Arenas
+depend: [BattleArena]
+main: mc.alk.dtf.DTF
+commands:
+    dtf:
+        aliases: [defendTheFlag]
