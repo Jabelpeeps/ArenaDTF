@@ -11,7 +11,7 @@ import org.bukkit.command.CommandSender;
 
 public class DTFExecutor extends CustomCommandExecutor{
 
-	@MCCommand(cmds={"addFlag"}, inGame=true, admin=true)
+	@MCCommand(cmds={"addFlag"}, admin=true)
 	public static boolean addFlag(ArenaPlayer sender, Arena arena, Integer index) {
 		if (!(arena instanceof DTFArena)){
 			return sendMessage(sender,"&eArena " + arena.getName() +" is not a CTF arena!");
