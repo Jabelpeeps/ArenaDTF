@@ -1,17 +1,17 @@
 package mc.alk.dtf;
 
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.controllers.PlayerStoreController;
-import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.util.InventoryUtil;
-import mc.alk.arena.util.SerializerUtil;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+
+import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.PlayerStoreController;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.util.InventoryUtil;
+import mc.alk.arena.util.SerializerUtil;
 
 public class Flag {
 	static int count = 0;
@@ -98,7 +98,7 @@ public class Flag {
 
 	public void remove() {
 		if (ent instanceof Player){
-			PlayerStoreController.removeItem(BattleArena.toArenaPlayer((Player) ent), is);
+			PlayerStoreController.removeItem(PlayerController.toArenaPlayer((Player) ent), is);
 		} else {
 			ent.remove();
 		}

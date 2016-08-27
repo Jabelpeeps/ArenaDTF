@@ -1,11 +1,20 @@
 package mc.alk.dtf;
 
-import mc.alk.arena.competition.match.Match;
-import mc.alk.arena.events.matches.messages.MatchIntervalMessageEvent;
-import mc.alk.arena.events.matches.messages.MatchTimeExpiredMessageEvent;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+
+import mc.alk.arena.competition.Match;
+import mc.alk.arena.controllers.messaging.MatchMessager;
+import mc.alk.arena.events.matches.MatchIntervalMessageEvent;
+import mc.alk.arena.events.matches.MatchTimeExpiredMessageEvent;
 import mc.alk.arena.objects.ArenaPlayer;
 import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.messaging.MatchMessageHandler;
 import mc.alk.arena.objects.scoreboard.ArenaDisplaySlot;
 import mc.alk.arena.objects.scoreboard.ArenaObjective;
 import mc.alk.arena.objects.scoreboard.ArenaScoreboard;
@@ -13,20 +22,12 @@ import mc.alk.arena.objects.teams.ArenaTeam;
 import mc.alk.arena.objects.victoryconditions.VictoryCondition;
 import mc.alk.arena.objects.victoryconditions.interfaces.DefinesLeaderRanking;
 import mc.alk.arena.util.TimeUtil;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 public class FlagVictory extends VictoryCondition implements DefinesLeaderRanking{
 
 	final ArenaObjective scores;
 	Integer capturesToWin;
-	MatchMessageHandler mmh;
+	MatchMessager mmh;
 	Map<ArenaTeam, Flag> teamFlags;
 
 	public FlagVictory(Match match) {
@@ -103,15 +104,15 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		match.setMatchResult(scores.getMatchResult(match));
 		map.put("{prefix}", match.getParams().getPrefix());
 		String node = null;
-		switch(match.getResult().getResult()){
+		switch(match.getMatchResult().getResult()){
 		case WIN:
-			for (ArenaTeam t: match.getResult().getVictors()){
+			for (ArenaTeam t: match.getMatchResult().getVictors()){
 				sb.append(t.getDisplayName() +" ");
 			}
 			node = "DefendTheFlag.time_expired_win";
 			break;
-		case DRAW:
-			for (ArenaTeam t: match.getResult().getDrawers()){
+		case TIE:
+			for (ArenaTeam t: match.getMatchResult().getDrawers()){
 				sb.append(t.getDisplayName() +" ");
 			}
 			node = "DefendTheFlag.time_expired_draw";
@@ -133,16 +134,14 @@ public class FlagVictory extends VictoryCondition implements DefinesLeaderRankin
 		this.capturesToWin = capturesToWin;
 	}
 
-	public void setMessageHandler(MatchMessageHandler mmh) {
+	public void setMessageHandler(MatchMessager mmh) {
 		this.mmh = mmh;
 	}
 
-	@Override
 	public List<ArenaTeam> getLeaders() {
 		return scores.getLeaders();
 	}
 
-	@Override
 	public TreeMap<?, Collection<ArenaTeam>> getRanks() {
 		return scores.getRanks();
 	}

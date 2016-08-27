@@ -1,19 +1,14 @@
 package mc.alk.dtf;
 
-import mc.alk.arena.BattleArena;
-import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
-import mc.alk.arena.objects.ArenaPlayer;
-import mc.alk.arena.objects.MatchResult;
-import mc.alk.arena.objects.MatchState;
-import mc.alk.arena.objects.arenas.Arena;
-import mc.alk.arena.objects.events.ArenaEventHandler;
-import mc.alk.arena.objects.events.EventPriority;
-import mc.alk.arena.objects.messaging.MatchMessageHandler;
-import mc.alk.arena.objects.teams.ArenaTeam;
-import mc.alk.arena.objects.victoryconditions.VictoryCondition;
-import mc.alk.arena.serializers.Persist;
-import mc.alk.arena.util.Log;
-import mc.alk.arena.util.TeamUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -30,14 +25,20 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import mc.alk.arena.controllers.PlayerController;
+import mc.alk.arena.controllers.messaging.MatchMessager;
+import mc.alk.arena.events.matches.MatchFindCurrentLeaderEvent;
+import mc.alk.arena.objects.ArenaPlayer;
+import mc.alk.arena.objects.MatchResult;
+import mc.alk.arena.objects.MatchState;
+import mc.alk.arena.objects.arenas.Arena;
+import mc.alk.arena.objects.events.ArenaEventHandler;
+import mc.alk.arena.objects.events.ArenaEventPriority;
+import mc.alk.arena.objects.teams.ArenaTeam;
+import mc.alk.arena.objects.victoryconditions.VictoryCondition;
+import mc.alk.arena.serializers.Persist;
+import mc.alk.arena.util.Log;
+import mc.alk.arena.util.TeamUtil;
 
 public class DTFArena extends Arena {
 	public static final boolean DEBUG = false;
@@ -73,11 +74,11 @@ public class DTFArena extends Arena {
 	final Set<Material> flagMaterials = new HashSet<Material>();
 
 	Random rand = new Random();
-    MatchMessageHandler mmh;
+    MatchMessager mmh;
 
 	@Override
 	public void onOpen(){
-		mmh = getMatch().getMessageHandler();
+		mmh = getMatch().getMatchMessager();
 		resetVars();
 		getMatch().addVictoryCondition(scores);
 	}
@@ -124,7 +125,6 @@ public class DTFArena extends Arena {
 		scores.setFlags(teamFlags);
 		/// Schedule flame effects
 		timerid = Bukkit.getScheduler().scheduleSyncRepeatingTask(DTF.getSelf(), new Runnable(){
-			@Override
 			public void run() {
 				boolean extraeffects = (runcount++ % 2 == 0);
 				for (Flag flag: flags.values()){
@@ -143,7 +143,6 @@ public class DTFArena extends Arena {
 
 		/// Schedule flag checks
 		flagCheckId = Bukkit.getScheduler().scheduleSyncRepeatingTask(DTF.getSelf(), new Runnable(){
-			@Override
 			public void run() {
 				for (Flag flag: flags.values()){
 					if (flag.isHome() && !flag.isValid()){
@@ -155,12 +154,11 @@ public class DTFArena extends Arena {
 
 		/// Schedule compass Updates
 		compassRespawnId = Bukkit.getScheduler().scheduleSyncRepeatingTask(DTF.getSelf(), new Runnable(){
-			@Override
-			public void run() {updateCompassLocations();}
+			public void run() { updateCompassLocations(); }
 		}, 0L, 5*20L);
 	}
 
-	private void updateCompassLocations() {
+	void updateCompassLocations() {
 		List<ArenaTeam> teams = getTeams();
 		Flag f;
 		for (int i=0;i<teams.size();i++){
@@ -203,7 +201,7 @@ public class DTFArena extends Arena {
 			playerDroppedFlag(flag, item);}
 	}
 
-	@ArenaEventHandler(priority=EventPriority.HIGHEST)
+	@ArenaEventHandler( priority = ArenaEventPriority.HIGHEST )
 	public void onMatchFindCurrentLeaderEvent(MatchFindCurrentLeaderEvent event){
 		MatchResult result = new MatchResult();
 		int i =0;
@@ -254,7 +252,7 @@ public class DTFArena extends Arena {
 		}
 	}
 
-	private Map<String, String> getCaptureParams() {
+	Map<String, String> getCaptureParams() {
 		Map<String,String> params = new HashMap<String,String>();
 		params.put("{prefix}", getMatch().getParams().getPrefix());
 		params.put("{maxcaptures}", capturesToWin+"");
@@ -301,7 +299,7 @@ public class DTFArena extends Arena {
 				|| event.getFrom().getBlockZ() != event.getTo().getBlockZ())
 				|| !flags.containsKey(event.getPlayer().getEntityId())){
 			return;}
-		if (this.getMatchState() != MatchState.ONSTART)
+		if (this.getState() != MatchState.ONSTART)
 			return;
 		ArenaTeam t = getTeam(event.getPlayer());
 		if (!teamFlags.containsKey(t))
@@ -315,10 +313,10 @@ public class DTFArena extends Arena {
 			/// and check the last capture time
 			if (lastc != null && System.currentTimeMillis() - lastc < TIME_BETWEN_CAPTURES){
 				return;
-			} else {
-				lastCapture.put(t, System.currentTimeMillis());
 			}
-			ArenaPlayer ap = BattleArena.toArenaPlayer(event.getPlayer());
+            lastCapture.put(t, System.currentTimeMillis());
+            
+			ArenaPlayer ap = PlayerController.toArenaPlayer(event.getPlayer());
 			/// for some reason sometimes its not cleared in removeFlags
 			/// so do it explicitly now
 			try{event.getPlayer().getInventory().remove(f.is);}catch(Exception e){}
@@ -385,7 +383,7 @@ public class DTFArena extends Arena {
 		startFlagRespawnTimer(flag);
 	}
 
-	private void spawnFlag(Flag flag){
+	void spawnFlag(Flag flag){
 		cancelFlagRespawnTimer(flag);
 		Entity ent = flag.getEntity();
 		if (ent != null)
@@ -396,8 +394,7 @@ public class DTFArena extends Arena {
 
 	private void startFlagRespawnTimer(final Flag flag) {
 		cancelFlagRespawnTimer(flag);
-		Integer timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(DTF.getSelf(), new Runnable(){
-			@Override
+		Integer _timerid = Bukkit.getScheduler().scheduleSyncDelayedTask(DTF.getSelf(), new Runnable(){
 			public void run() {
 				spawnFlag(flag);
 				ArenaTeam team = flag.getTeam();
@@ -405,7 +402,7 @@ public class DTFArena extends Arena {
 				team.sendMessage(mmh.getMessage("DefendTheFlag.returned_flag",params));
 			}
 		}, FLAG_RESPAWN_TIMER);
-		respawnTimers.put(flag, timerid);
+		respawnTimers.put(flag, _timerid);
 	}
 
 	private void cancelFlagRespawnTimer(Flag flag){
